@@ -1,23 +1,14 @@
 #!/usr/bin/env python
-"""
-evaluation script for financial deep learning models.
-"""
-
 import os
 import argparse
 import torch
-import torch.nn as nn
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
-from models.finance_nn import (
-    FinancialTimeSeriesTransformer,
-    FinancialRiskAwareGRU,
-    FinancialMultiTaskNetwork,
-)
+from models import TimeSeriesTransformer, RiskAwareGRU, MultiTaskNetwork
 
 
 def parse_args():
@@ -115,7 +106,7 @@ def prepare_test_data(args):
 def create_model(args, input_dim):
     """create the specified model."""
     if args.model_type == "transformer":
-        model = FinancialTimeSeriesTransformer(
+        model = TimeSeriesTransformer(
             input_dim=input_dim,
             output_dim=1,
             d_model=args.hidden_dim,
@@ -123,14 +114,14 @@ def create_model(args, input_dim):
             max_seq_length=args.sequence_length,
         )
     elif args.model_type == "gru":
-        model = FinancialRiskAwareGRU(
+        model = RiskAwareGRU(
             input_dim=input_dim,
             hidden_dim=args.hidden_dim,
             output_dim=1,
             num_layers=args.num_layers,
         )
     elif args.model_type == "multitask":
-        model = FinancialMultiTaskNetwork(
+        model = MultiTaskNetwork(
             input_dim=input_dim * args.sequence_length,  # flatten input for multi-task
             shared_dim=args.hidden_dim,
             task_specific_dim=args.hidden_dim // 2,
@@ -157,13 +148,13 @@ def evaluate_model(model, X, y, device):
             batch_X = X[i : i + 64].to(device)
 
             # forward pass
-            if isinstance(model, FinancialMultiTaskNetwork):
+            if isinstance(model, MultiTaskNetwork):
                 # flatten input for multi-task network
                 batch_size, seq_len, feat_dim = batch_X.shape
                 data_flat = batch_X.reshape(batch_size, seq_len * feat_dim)
                 output = model(data_flat)[0]  # take first task output (returns)
                 output = output.view(-1, seq_len)
-            elif isinstance(model, FinancialRiskAwareGRU):
+            elif isinstance(model, RiskAwareGRU):
                 output = model(batch_X)["mean"]  # take mean prediction
                 output = output.view(-1, seq_len)
             else:

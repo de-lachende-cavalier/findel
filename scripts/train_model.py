@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-"""
-training script for financial deep learning models.
-"""
-
 import os
 import argparse
 import torch
@@ -14,12 +10,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from models.finance_nn import (
-    FinancialTimeSeriesTransformer,
-    FinancialRiskAwareGRU,
-    FinancialMultiTaskNetwork,
-)
-from losses.financial_losses import (
+from models import TimeSeriesTransformer, RiskAwareGRU, MultiTaskNetwork
+
+from losses import (
     SharpeRatioLoss,
     SortinoRatioLoss,
     MaxDrawdownLoss,
@@ -167,7 +160,7 @@ def prepare_data(args):
 def create_model(args, input_dim):
     """create the specified model."""
     if args.model_type == "transformer":
-        model = FinancialTimeSeriesTransformer(
+        model = TimeSeriesTransformer(
             input_dim=input_dim,
             output_dim=1,
             d_model=args.hidden_dim,
@@ -176,7 +169,7 @@ def create_model(args, input_dim):
             max_seq_length=args.sequence_length,
         )
     elif args.model_type == "gru":
-        model = FinancialRiskAwareGRU(
+        model = RiskAwareGRU(
             input_dim=input_dim,
             hidden_dim=args.hidden_dim,
             output_dim=1,
@@ -184,7 +177,7 @@ def create_model(args, input_dim):
             dropout=args.dropout,
         )
     elif args.model_type == "multitask":
-        model = FinancialMultiTaskNetwork(
+        model = MultiTaskNetwork(
             input_dim=input_dim * args.sequence_length,  # flatten input for multi-task
             shared_dim=args.hidden_dim,
             task_specific_dim=args.hidden_dim // 2,
@@ -230,13 +223,13 @@ def train_epoch(model, train_loader, optimizer, loss_fn, device):
         optimizer.zero_grad()
 
         # forward pass
-        if isinstance(model, FinancialMultiTaskNetwork):
+        if isinstance(model, MultiTaskNetwork):
             # flatten input for multi-task network
             batch_size, seq_len, feat_dim = data.shape
             data_flat = data.reshape(batch_size, seq_len * feat_dim)
             output = model(data_flat)[0]  # take first task output (returns)
             output = output.view(-1, seq_len)
-        elif isinstance(model, FinancialRiskAwareGRU):
+        elif isinstance(model, RiskAwareGRU):
             output = model(data)["mean"]  # take mean prediction
             output = output.view(-1, seq_len)
         else:
@@ -266,13 +259,13 @@ def validate(model, val_loader, loss_fn, device):
             data, target = data.to(device), target.to(device)
 
             # forward pass
-            if isinstance(model, FinancialMultiTaskNetwork):
+            if isinstance(model, MultiTaskNetwork):
                 # flatten input for multi-task network
                 batch_size, seq_len, feat_dim = data.shape
                 data_flat = data.reshape(batch_size, seq_len * feat_dim)
                 output = model(data_flat)[0]  # take first task output (returns)
                 output = output.view(-1, seq_len)
-            elif isinstance(model, FinancialRiskAwareGRU):
+            elif isinstance(model, RiskAwareGRU):
                 output = model(data)["mean"]  # take mean prediction
                 output = output.view(-1, seq_len)
             else:
