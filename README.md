@@ -6,9 +6,7 @@ More specifically, we aim to develop novel neural network architectures and trai
 
 For our experiments, we use financial time series data and develop specialized models that respect the unique characteristics of financial markets, such as non-stationarity, regime changes, and market microstructure.
 
-## Project Overview
-
-This project explores the development of finance-specific deep learning models inspired by physics-based approaches. Key areas of focus include:
+Key areas of focus include:
 
 1. **Financial Inductive Biases**: Encoding financial domain knowledge directly into neural network architectures
 2. **Market-Aware Loss Functions**: Developing specialized loss functions that capture financial risk metrics and market behavior
@@ -21,10 +19,12 @@ The code uses `python 3.11`. To run it, do the following:
 
 1. (Optional) Set up a virtual environment;
 2. Install all the requirements (i.e., `pip install -r requirements.txt`);
-3. Install the project in editable mode (i.e., `pip install -e .`);
-4. Run the scripts in the `scripts/` directory with appropriate arguments.
+3. Run the scripts in the `scripts/run_findel.sh`.
 
-## Project Structure
+    3. (Note that this will run the entire pipeline, check the README in the `scripts/` directory if you want to run individual scripts)
+
+
+## Project structure
 
 ```
 findel/
@@ -33,7 +33,6 @@ findel/
 ├── losses/                # specialized financial loss functions
 ├── utils/                 # utility functions
 ├── experiments/           # experiment configurations
-├── notebooks/             # jupyter notebooks for exploration and visualization
 ├── scripts/               # training and evaluation scripts
 ├── tests/                 # unit tests
 ```
