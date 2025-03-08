@@ -36,21 +36,21 @@ class SortinoRatioLoss(nn.Module):
         Returns:
             Negative Sortino ratio (scalar)
         """
-        # Calculate mean return
+        # calculate mean return
         mean_return = torch.mean(returns, dim=1)
 
-        # Calculate downside deviation (only negative returns relative to target)
+        # calculate downside deviation (only negative returns relative to target)
         downside_diff = torch.clamp(self.target_return - returns, min=0)
         downside_diff_squared = downside_diff**2
         downside_variance = torch.mean(downside_diff_squared, dim=1)
         downside_deviation = torch.sqrt(downside_variance + self.eps)
 
-        # Calculate Sortino ratio
+        # calculate sortino ratio
         sortino = (mean_return - self.risk_free_rate) / downside_deviation
 
-        # Annualize if needed
+        # annualize if needed
         if self.annualization_factor > 1:
             sortino = sortino * torch.sqrt(torch.tensor(self.annualization_factor))
 
-        # Return negative Sortino for minimization
+        # return negative sortino for minimization
         return -torch.mean(sortino)

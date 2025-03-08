@@ -32,24 +32,24 @@ class CalmarRatioLoss(nn.Module):
         Returns:
             Negative Calmar ratio (scalar)
         """
-        # Calculate annualized return
+        # calculate annualized return
         mean_return = torch.mean(returns, dim=1)
         annualized_return = (1 + mean_return) ** self.annualization_factor - 1
 
-        # Convert returns to cumulative returns (starting at 1.0)
+        # convert returns to cumulative returns (starting at 1.0)
         cum_returns = torch.cumprod(1 + returns, dim=1)
 
-        # Calculate running maximum
+        # calculate running maximum
         running_max = torch.cummax(cum_returns, dim=1)[0]
 
-        # Calculate drawdowns
+        # calculate drawdowns
         drawdowns = (running_max - cum_returns) / running_max
 
-        # Get maximum drawdown for each sequence in the batch
+        # get maximum drawdown for each sequence in the batch
         max_drawdowns = torch.max(drawdowns, dim=1)[0] + self.eps
 
-        # Calculate Calmar ratio
+        # calculate calmar ratio
         calmar_ratio = annualized_return / max_drawdowns
 
-        # Return negative Calmar ratio for minimization
+        # return negative calmar ratio for minimization
         return -torch.mean(calmar_ratio)

@@ -36,7 +36,7 @@ class FinancialRegularizerLoss(nn.Module):
         self.drawdown_weight = drawdown_weight
         self.volatility_weight = volatility_weight
 
-        # Financial loss components
+        # financial loss components
         self.sharpe_loss = SharpeRatioLoss()
         self.sortino_loss = SortinoRatioLoss()
         self.drawdown_loss = MaxDrawdownLoss()
@@ -54,15 +54,15 @@ class FinancialRegularizerLoss(nn.Module):
         Returns:
             Combined loss (scalar)
         """
-        # Base prediction loss
+        # base prediction loss
         base_loss = self.base_criterion(pred_returns, true_returns)
 
-        # If true_next_returns is not provided, use pred_returns for financial metrics
+        # if true_next_returns is not provided, use pred_returns for financial metrics
         financial_returns = (
             true_next_returns if true_next_returns is not None else pred_returns
         )
 
-        # Financial losses
+        # financial losses
         sharpe_loss = (
             self.sharpe_loss(financial_returns) if self.sharpe_weight > 0 else 0
         )
@@ -73,13 +73,13 @@ class FinancialRegularizerLoss(nn.Module):
             self.drawdown_loss(financial_returns) if self.drawdown_weight > 0 else 0
         )
 
-        # Volatility penalty (if enabled)
+        # volatility penalty (if enabled)
         volatility_loss = 0
         if self.volatility_weight > 0:
             volatility = torch.std(financial_returns, dim=1)
             volatility_loss = torch.mean(volatility)
 
-        # Combine all losses
+        # combine all losses
         total_loss = (
             base_loss
             + self.sharpe_weight * sharpe_loss

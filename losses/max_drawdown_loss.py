@@ -28,18 +28,18 @@ class MaxDrawdownLoss(nn.Module):
         Returns:
             Maximum drawdown loss (scalar)
         """
-        # Convert returns to cumulative returns (starting at 1.0)
+        # convert returns to cumulative returns (starting at 1.0)
         batch_size = returns.shape[0]
         cum_returns = torch.cumprod(1 + returns, dim=1)
 
-        # Calculate running maximum
+        # calculate running maximum
         running_max = torch.cummax(cum_returns, dim=1)[0]
 
-        # Calculate drawdowns
+        # calculate drawdowns
         drawdowns = (running_max - cum_returns) / running_max
 
-        # Get maximum drawdown for each sequence in the batch
+        # get maximum drawdown for each sequence in the batch
         max_drawdowns = torch.max(drawdowns, dim=1)[0]
 
-        # Return weighted maximum drawdown
+        # return weighted maximum drawdown
         return self.alpha * torch.mean(max_drawdowns)

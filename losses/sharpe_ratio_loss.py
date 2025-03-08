@@ -34,16 +34,16 @@ class SharpeRatioLoss(nn.Module):
         Returns:
             Negative Sharpe ratio (scalar)
         """
-        # Calculate mean and standard deviation of returns
+        # calculate mean and standard deviation of returns
         mean_return = torch.mean(returns, dim=1)
         std_return = torch.std(returns, dim=1) + self.eps
 
-        # Calculate Sharpe ratio
+        # calculate sharpe ratio
         sharpe = (mean_return - self.risk_free_rate) / std_return
 
-        # Annualize if needed
+        # annualize if needed
         if self.annualization_factor > 1:
             sharpe = sharpe * torch.sqrt(torch.tensor(self.annualization_factor))
 
-        # Return negative Sharpe for minimization
+        # return negative sharpe for minimization
         return -torch.mean(sharpe)
